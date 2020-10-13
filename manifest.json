@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name":             "UrgentMail",
+  "author":           "einKnie@gmx.at",
+  "version":          "0.2",
+  "description":      "Raise X11 urgent flag on new mail",
+
+  "applications": {
+    "gecko": {
+      "id": "mailAlert@einKnie",
+      "strict_min_version": "78.3"
+      }
+  },
+
+  "permissions": [
+    "messagesRead",
+    "messagesMove",
+    "accountsRead"
+  ],
+
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+
+  "options_ui": {
+    "page": "options/options.html"
+  }
+
+}
