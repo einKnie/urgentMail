@@ -8,7 +8,7 @@
 //  - setting page that is populated from useraccounts
 //  - option to enable/disable accouts and single folders within accounts
 
-const DEBUG = false;
+const DEBUG = true;
 var log = console.log;
 var logDebug;
 if (DEBUG) {
@@ -20,6 +20,7 @@ if (DEBUG) {
 var useraccounts = [];
 
 init()
+  .then(initSettings, onError)
   .then(function start() {
     log("urgentMail initialized");
     logDebug(useraccounts);
@@ -28,6 +29,17 @@ init()
 
 function onError(e) {
   log('error: ' + e);
+}
+
+function initSettings() {
+  browser.storage.local.get(["accounts"])
+    .then(function(pref) {
+      var newPrefs = {
+        accounts: pref.accounts || useraccounts
+      };
+      logDebug(newPrefs.accounts);
+      browser.storage.local.set(newPrefs);
+    }, onError);
 }
 
 function init() {

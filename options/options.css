@@ -1,0 +1,127 @@
+/*
+ * Horrible stuff...
+ * But it works for now and will be fixed in the future
+ */
+
+
+html, body {
+  background-color: #1f201e;
+  font-family:      sans-serif;
+  color:            #aaaca6;
+  height:           350px;
+  width:            600px;
+  display:          block;
+  margin:           10px auto;
+}
+
+.hidden {
+  display:    none;
+}
+
+p {
+  margin:     5px 10px auto 10px;
+}
+
+#title {
+  display:    block;
+  margin:     10px auto;
+  text-align: center;
+
+}
+
+#titletext {
+  font-size:  larger;
+  display:    block;
+  margin:     10px auto;
+}
+
+#accounts {
+  width: 400px;
+}
+
+label {
+  margin:     5px 0px;
+}
+
+input[type="checkbox"] {
+  margin:           5px 10px;
+  background-color: #ff0000;
+  color:            #00ff00;
+}
+
+#modifier {
+  margin:           5px 10px;
+  background-color: #8d9089;
+  border-color:     #4e504c;
+  color:            #1f201e;
+  font-size:        large;
+}
+
+.content {
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+}
+
+.applybutton {
+  margin:           0px auto;
+  background-color: #1f201e;
+  color:            #aaaca6;
+  border:           1px solid #babcb7;
+  font-size:        large;
+  display:          block;
+}
+
+.applybutton:hover {
+  background-color: #4e504c;
+}
+
+.outer_box {
+  display: flex;
+}
+
+.logo_wrapper {
+  width:  200px;
+  margin: 10px 10px;
+  border: 1px solid #babcb7;
+}
+
+.logo {
+  display:  block;
+  margin:   10px auto;
+}
+
+.apptext {
+  margin:       auto 5px;
+  text-align:   center;
+}
+
+.appversion {
+  margin:       10px 5px auto 5px;
+  text-align:   center;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 160px;
+  top: 100%;
+  right: 50%;
+  margin-left: -80px;
+  background-color: black;
+  color: #aaaca6;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+
+  position: absolute;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
