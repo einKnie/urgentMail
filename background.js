@@ -7,7 +7,7 @@
 
 (function() {
 
-  const DEBUG = true;
+  const DEBUG = false;
   var log = console.log;
   var logDebug;
   if (DEBUG) {
@@ -115,7 +115,8 @@
       return 1;
     }
 
-    for (let i = 0; i < olds.length; i++) {
+    let len = (olds.length < news.length) ? olds.length : news.length;
+    for (let i = 0; i < len; i++) {
       if (olds[i].folders.length != news[i].folders.length) {
         return 1;
       }
