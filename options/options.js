@@ -4,7 +4,7 @@
   var um_description = "Select folders to monitor for new mail";
   var um_version = "v0.0";
 
-  const DEBUG = true;
+  const DEBUG = false;
   var logDebug;
   if (DEBUG) {
     logDebug = console.log;
