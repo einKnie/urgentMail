@@ -8,7 +8,7 @@ html, body {
   background-color: #1f201e;
   font-family:      sans-serif;
   color:            #aaaca6;
-  height:           350px;
+  height:           300px;
   width:            600px;
   display:          block;
   margin:           10px auto;
@@ -81,7 +81,7 @@ input[type="checkbox"] {
 }
 
 .logo_wrapper {
-  width:  200px;
+  width:  180px;
   margin: 10px 10px;
   border: 1px solid #babcb7;
 }
