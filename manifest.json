@@ -8,7 +8,7 @@
   "applications": {
     "gecko": {
       "id": "mailAlert@einKnie",
-      "strict_min_version": "78.3"
+      "strict_min_version": "78.0"
       }
   },
 
