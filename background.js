@@ -1,25 +1,26 @@
 //
 // changelog
 // v1.0
-//  - base implementation, inbox of all accounts is monitored
+//  - base implementation, inbox of all accounts is monitored per default
+//  - other folders can be enabled/disabled via the options page
 //  - on newmail event, window is set to draw attention
 //
-// todo
-//  - setting page that is populated from useraccounts
-//  - option to enable/disable accouts and single folders within accounts
+// TODO: - on init: if new accounts/folders found -> add to settings
 
-const DEBUG = true;
-var log = console.log;
-var logDebug;
-if (DEBUG) {
-  logDebug = console.log;
-} else {
-  logDebug = function () { };
-}
+(function() {
 
-var useraccounts = [];
+  const DEBUG = true;
+  var log = console.log;
+  var logDebug;
+  if (DEBUG) {
+    logDebug = console.log;
+  } else {
+    logDebug = function () { };
+  }
 
-init()
+  var useraccounts = [];
+
+  init()
   .then(initSettings, onError)
   .then(function start() {
     log("urgentMail initialized");
@@ -27,12 +28,13 @@ init()
     browser.messages.onNewMailReceived.addListener((folder, msgList) => onNewMailReceivedHdl(folder, msgList));
   }, onError);
 
-function onError(e) {
-  log('error: ' + e);
-}
+  // ---
 
-function initSettings() {
-  browser.storage.local.get(["accounts"])
+  /*
+  * Initialize/apply settings
+  */
+  function initSettings() {
+    browser.storage.local.get(["accounts"])
     .then(function(pref) {
       var newPrefs = {
         accounts: pref.accounts || useraccounts
@@ -41,11 +43,14 @@ function initSettings() {
       useraccounts = newPrefs.accounts;
       browser.storage.local.set(newPrefs);
     }, onError);
-}
+  }
 
-function init() {
-  return new Promise((resolve) => {
-    browser.accounts.list()
+  /*
+  * Initialize urgentMail
+  */
+  function init() {
+    return new Promise((resolve) => {
+      browser.accounts.list()
       .then(function(acc) {
         for (a of acc) {
           logDebug (a);
@@ -53,8 +58,8 @@ function init() {
 
           let accountObj = {
             id: {
-                  accountId: null,
-                  name:      null
+              accountId: null,
+              name:      null
             },
             folders: [],
             monitored: []
@@ -76,26 +81,38 @@ function init() {
         resolve("success");
       }, onError);
     });
-}
+  }
 
-function onNewMailReceivedHdl(folder, msglist) {
-  logDebug("mail received event");
-  acc = folder.accountId;
-  fol = folder.type;
+  /*
+  * Handler for new mail
+  */
+  function onNewMailReceivedHdl(folder, msglist) {
+    logDebug("mail received event");
+    acc = folder.accountId;
+    fol = folder.type;
 
-  for (acc of useraccounts) {
-    if (acc.id.accountId != folder.accountId) continue;
+    for (acc of useraccounts) {
+      if (acc.id.accountId != folder.accountId) continue;
 
-    logDebug("for " + acc.id.name + " in folder " + folder.name);
-    if (acc.monitored.includes(folder.path)) {
-      log("Hey " + acc.id.name + "! You got mail!");
-      notify();
+      logDebug("for " + acc.id.name + " in folder " + folder.name);
+      if (acc.monitored.includes(folder.path)) {
+        log("Hey " + acc.id.name + "! You got mail!");
+        notify();
+      }
     }
   }
-}
 
-function notify() {
-  browser.windows.getLastFocused({ populate: false }).then(win => {
-    browser.windows.update(win.id, {drawAttention: true});
-  });
-}
+  /*
+  * Set window to draw attention
+  */
+  function notify() {
+    browser.windows.getLastFocused({ populate: false }).then(win => {
+      browser.windows.update(win.id, {drawAttention: true});
+    });
+  }
+
+  function onError(e) {
+    log('error: ' + e);
+  }
+
+})();
