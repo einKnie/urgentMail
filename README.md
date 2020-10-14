@@ -1,12 +1,17 @@
 # urgentMail
+
 Sets the urgent flag on Thunderbird window upon incoming mail.
 
-By default, only the inbox of every active mail account is monitored for incoming mail, though any and all of folders can be selected via the settings.
+Per default, the Add-on monitors every account's Inbox, though you can decide which folders to monitor in the Add-on's settings.
 
-[WIP]
 
 ## Installation
 
+#### The Easy Way
+ 
+[Get it on the Thunderbird Addons Page](https://addons.thunderbird.net/en-GB/thunderbird/addon/urgentmail/)
+
+#### Old Install Instructions
 To install as a temporary Thunderbird extension:
 
 1. Clone this repo to your machine
