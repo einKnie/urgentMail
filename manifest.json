@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name":             "UrgentMail",
   "author":           "einKnie@gmx.at",
-  "version":          "0.5",
+  "version":          "1.0",
   "description":      "Raise X11 urgent flag on new mail",
 
   "applications": {
