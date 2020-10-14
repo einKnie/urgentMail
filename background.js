@@ -25,6 +25,7 @@
   .then(function start() {
     log("urgentMail initialized");
     logDebug(useraccounts);
+    browser.storage.onChanged.addListener(onSettingsChanged);
     browser.messages.onNewMailReceived.addListener((folder, msgList) => onNewMailReceivedHdl(folder, msgList));
   }, onError);
 
@@ -42,6 +43,17 @@
       logDebug(newPrefs.accounts);
       useraccounts = newPrefs.accounts;
       browser.storage.local.set(newPrefs);
+    }, onError);
+  }
+
+  /*
+   * Handler for changed settings
+   */
+  function onSettingsChanged() {
+    logDebug("settings changed!");
+    browser.storage.local.get(["accounts"])
+    .then(function(pref) {
+      useraccounts = pref.accounts;
     }, onError);
   }
 
