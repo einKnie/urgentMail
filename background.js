@@ -38,6 +38,7 @@ function initSettings() {
         accounts: pref.accounts || useraccounts
       };
       logDebug(newPrefs.accounts);
+      useraccounts = newPrefs.accounts;
       browser.storage.local.set(newPrefs);
     }, onError);
 }
