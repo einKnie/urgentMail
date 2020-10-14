@@ -19,9 +19,9 @@ getVersion();
 function fetchSettings(result) {
   return new Promise((resolve,reject) => {
     console.log(result);
-    var newprefs = result.accounts; // local storage
+    var newprefs = result; // local storage
     try {
-      for (a of newprefs) {
+      for (a of newprefs.accounts) {
          // for each account
          console.log(a);
          for (folder of a.folders) {
@@ -71,10 +71,11 @@ function saveOptions(e) {
  newSites.then(fetchSettings, onError).then(function(result) {
    console.log("storing data");
      return new Promise((resolve, reject) => {
+       console.log(result);
        var newprefs = {
          accounts: result.accounts
        };
-       console.log(newprefs.accounts);
+       console.log(newprefs);
        browser.storage.local.set(newprefs)
         .then(function(){resolve("yay");}, function(){reject("Failed to store data");});});
    }, onError);
