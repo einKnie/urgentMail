@@ -24,7 +24,7 @@
     log("urgentMail initialized");
     logDebug(useraccounts);
     browser.storage.onChanged.addListener(onSettingsChanged);
-    browser.messages.onNewMailReceived.addListener((folder, msgList) => onNewMailReceivedHdl(folder, msgList));
+    browser.messages.onNewMailReceived.addListener((folder, msgList) => onNewMailReceived(folder, msgList));
   }, onError);
 
   // ---
@@ -239,10 +239,8 @@
   /*
   * Handler for new mail
   */
-  function onNewMailReceivedHdl(folder, msglist) {
+  function onNewMailReceived(folder, msglist) {
     logDebug("mail received event");
-    acc = folder.accountId;
-    fol = folder.type;
 
     for (acc of useraccounts) {
       if (acc.id.accountId != folder.accountId) continue;
