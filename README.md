@@ -11,7 +11,10 @@ Per default, the Add-on monitors every account's Inbox, though you can decide wh
  
 [Get it on the Thunderbird Addons Page](https://addons.thunderbird.net/en-GB/thunderbird/addon/urgentmail/)
 
-#### Old Install Instructions
+---
+
+##### Old Install Instructions
+
 To install as a temporary Thunderbird extension:
 
 1. Clone this repo to your machine
@@ -22,6 +25,7 @@ To install as a temporary Thunderbird extension:
 The extension is now installed and active.
 
 ## Usage
+
 Just activate the add-on and Thunderbird will draw attention to itself on incoming mail.  
 This will let your window manager know that there is something going on in the respective workspace.
 
