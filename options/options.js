@@ -36,7 +36,7 @@
           logDebug("checking account: ");
           logDebug(a);
           for (folder of a.folders) {
-            let chkbox = document.getElementById(`${a.id.accountId}/${folder.path}`);
+            let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
             if (chkbox.checked) {
               // check if folder in monitored and add
               if (!a.monitored.includes(folder.path)) {
@@ -75,7 +75,7 @@
   * Store options from settings page
   */
   function saveOptions(e) {
-    e.preventDefault();
+    if (e != null) e.preventDefault();
 
     var oldPrefs = browser.storage.local.get(["accounts"]);
     oldPrefs.then(fetchSettings, onError).then(function(result) {
@@ -116,10 +116,10 @@
             logDebug(content);
 
             for (folder of a.folders) {
-              var chkbox = document.getElementById(`${a.id.accountId}/${folder.path}`);
+              var chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
               if (chkbox == null) {
                 content.appendChild(createCheckbox(a, folder));
-                chkbox = document.getElementById(`${a.id.accountId}/${folder.path}`);
+                chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
               }
 
               if (a.monitored.includes(folder.path)) {
@@ -169,12 +169,14 @@
       var innerdiv = document.createElement("div");
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
-      chkbox.id = `${a.id.accountId}/${fol.path}`;
+      chkbox.id = `${a.id.accountId}${fol.path}`;
       chkbox.checked = (a.monitored.includes(fol.path));
 
       var label = document.createElement("label");
       label.htmlFor = chkbox.id;
       label.appendChild(document.createTextNode(`Monitor ${fol.name}`));
+
+      chkbox.addEventListener('change', onCheckboxToggle);
 
       innerdiv.appendChild(chkbox);
       innerdiv.appendChild(label);
@@ -191,6 +193,16 @@
       } else {
         content.style.display = "block";
       }
+    }
+
+    /*
+     * handler for checkbox changed
+     */
+    function onCheckboxToggle(e) {
+      let account = e.target.id.split('/')[0];
+      let folder = e.target.id.split('/')[1];
+      logDebug(`checkbox was clicked! (${account} - ${folder})`);
+      saveOptions();
     }
 
     function onError(error) {
