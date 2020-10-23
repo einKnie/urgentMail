@@ -15,7 +15,6 @@
   // add listeners.
   // need to manually 'disable' the default action of form-submit -> reloads page, which is unnecessary.
   document.addEventListener("DOMContentLoaded", restoreOptions);
-  document.getElementById("applybutton").addEventListener("click", saveOptions);
   document.querySelector("form").addEventListener('submit', function(e) {e.preventDefault();});
 
   getVersion();
@@ -74,9 +73,7 @@
   /*
   * Store options from settings page
   */
-  function saveOptions(e) {
-    if (e != null) e.preventDefault();
-
+  function saveOptions() {
     var oldPrefs = browser.storage.local.get(["accounts"]);
     oldPrefs.then(fetchSettings, onError).then(function(result) {
       logDebug("storing new data");
@@ -95,7 +92,6 @@
     * Apply current options to settings page
     */
     function restoreOptions() {
-
       function setupSettingsPage(result) {
         var accs = document.getElementById("accounts");
         if (accs == null) {
