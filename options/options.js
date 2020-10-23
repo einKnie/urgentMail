@@ -84,8 +84,26 @@
         };
         logDebug(newPrefs);
         browser.storage.local.set(newPrefs)
-          .then(function() { resolve("yay"); }, function() { reject("Failed to store data"); });});
+          .then(function() { setSavedText(true); resolve("yay"); },
+                function() { reject("Failed to store data"); });});
       }, onError);
+    }
+
+    /*
+     * toggle the display of as "Saved" info text
+     */
+    function setSavedText(on) {
+      var text = document.getElementById("saved_text");
+      if (text == null) {
+        onError("Did not find saved text element");
+        return;
+      }
+      if (on && (text.style.display != "block")) {
+        text.style.display = "block";
+        document.defaultView.setTimeout(setSavedText, 1000, false);
+      } else if (!on) {
+        text.style.display = "none";
+      }
     }
 
     /*

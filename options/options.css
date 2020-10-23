@@ -71,3 +71,9 @@ input[type="checkbox"] {
   margin:       10px 5px auto 5px;
   text-align:   center;
 }
+
+.saved_text {
+  display:      none;
+  margin:       auto 5px;
+  text-align:   center;
+}
