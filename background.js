@@ -4,6 +4,8 @@
 //  - base implementation, inbox of all accounts is monitored per default
 //  - other folders can be enabled/disabled via the options page
 //  - on newmail event, window is set to draw attention
+// v1.1
+//  - settings are automatically saved as they are changed
 
 (function() {
 
@@ -100,7 +102,7 @@
         logDebug(newPrefs.accounts);
         useraccounts = newPrefs.accounts;
         browser.storage.local.set(newPrefs)
-          .then( function() {resolve("yay");});
+          .then( function() { resolve("yay"); });
       }, onError);
     });
   }
