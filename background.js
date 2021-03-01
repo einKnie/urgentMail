@@ -9,7 +9,7 @@
 
 (function() {
 
-  const DEBUG = false;
+  const DEBUG = true;
   var log = console.log;
   var logDebug;
   if (DEBUG) {
@@ -58,6 +58,12 @@
           for (fol of a.folders) {
             // logDebug(`adding folder ${fol.name} to account ${a.name}`);
             accountObj.folders.push(fol);
+
+						// if (fol.subFolders.length > 0) {
+						// 	for (subfol of fol.subFolders) {
+						// 		accountObj.folders.push(subfol);
+						// 	}
+						// }
             if (fol.type == "inbox") {
               accountObj.monitored.push(fol.path);
             }

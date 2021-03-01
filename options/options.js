@@ -4,7 +4,7 @@
   var um_description = "Select folders to monitor for new mail";
   var um_version = "v0.0";
 
-  const DEBUG = false;
+  const DEBUG = true;
   var logDebug;
   if (DEBUG) {
     logDebug = console.log;
@@ -35,21 +35,10 @@
           logDebug("checking account: ");
           logDebug(a);
           for (folder of a.folders) {
-            let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
-            if (chkbox.checked) {
-              // check if folder in monitored and add
-              if (!a.monitored.includes(folder.path)) {
-                a.monitored.push(folder.path);
-              }
-            } else {
-              // check if folder in monitored, and remove
-              if (a.monitored.includes(folder.path)) {
-                for (let i = 0; i < a.monitored.length; i++) {
-                  if (a.monitored[i] == folder.path) {
-                    a.monitored.splice(i, 1);
-                  }
-                }
-              }
+            checkChkbox(a, folder);
+
+            for (subfol of folder.subFolders) {
+              checkChkbox(a, subfol);
             }
           }
         }
@@ -58,6 +47,25 @@
       }
       resolve(newPrefs);
     });
+  }
+
+  function checkChkbox(a, folder) {
+    let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
+    if (chkbox.checked) {
+      // check if folder in monitored and add
+      if (!a.monitored.includes(folder.path)) {
+        a.monitored.push(folder.path);
+      }
+    } else {
+      // check if folder in monitored, and remove
+      if (a.monitored.includes(folder.path)) {
+        for (let i = 0; i < a.monitored.length; i++) {
+          if (a.monitored[i] == folder.path) {
+            a.monitored.splice(i, 1);
+          }
+        }
+      }
+    }
   }
 
   /*
@@ -159,7 +167,11 @@
             content.style.display = "none";
 
             for (fol of a.folders) {
-              content.appendChild(createCheckbox(a, fol));
+              var chkbox = createCheckbox(a, fol);
+              for (subfol of fol.subFolders) {
+                chkbox.appendChild(createCheckbox(a, subfol, fol));
+              }
+              content.appendChild(chkbox);
             }
 
             account.appendChild(button);
@@ -179,7 +191,7 @@
     /*
      * Create a checkbox on the settings page
      */
-    function createCheckbox(a, fol) {
+    function createCheckbox(a, fol, parent = null) {
       var innerdiv = document.createElement("div");
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
@@ -188,7 +200,7 @@
 
       var label = document.createElement("label");
       label.htmlFor = chkbox.id;
-      label.appendChild(document.createTextNode(`Monitor ${fol.name}`));
+      label.appendChild(document.createTextNode(`Monitor ${parent? parent.name+' >' : ''} ${fol.name}`));
 
       chkbox.addEventListener('change', onCheckboxToggle);
 
@@ -213,8 +225,9 @@
      * handler for checkbox changed
      */
     function onCheckboxToggle(e) {
-      let account = e.target.id.split('/')[0];
-      let folder = e.target.id.split('/')[1];
+      let split = e.target.id.split(/\/(.+)/);
+      let account = split[0];
+      let folder = split[1];
       logDebug(`checkbox was clicked! (${account} - ${folder})`);
       saveOptions();
     }
