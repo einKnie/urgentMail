@@ -56,14 +56,9 @@
           accountObj.id.name      = a.name;
 
           for (fol of a.folders) {
-            // logDebug(`adding folder ${fol.name} to account ${a.name}`);
             accountObj.folders.push(fol);
 
-						// if (fol.subFolders.length > 0) {
-						// 	for (subfol of fol.subFolders) {
-						// 		accountObj.folders.push(subfol);
-						// 	}
-						// }
+            // set default monitoring of inbox
             if (fol.type == "inbox") {
               accountObj.monitored.push(fol.path);
             }
@@ -120,12 +115,32 @@
   function settingsDiffer(olds, news) {
     logDebug("checking if settings differ in length");
     if (olds.length != news.length) {
+      // number of accounts has changed
       return 1;
     }
 
-    let len = (olds.length < news.length) ? olds.length : news.length;
-    for (let i = 0; i < len; i++) {
-      if (olds[i].folders.length != news[i].folders.length) {
+
+    for (let i = 0; i < olds.length; i++) {
+      // per account
+      if (foldersDiffer(olds[i].folders, news[i].folders) == 1) {
+        return 1;
+      }
+    }
+
+    return 0;
+  }
+
+  /*
+   *  Recursively check if any subfolders differ between oldfol and newfol
+  */
+  function foldersDiffer(oldfol, newfol) {
+
+    if (oldfol.length != newfol.length) {
+      return 1;
+    }
+
+    for (let i = 0; i < oldfol.length; i++) {
+      if (foldersDiffer(oldfol[i].subFolders, newfol[i].subFolders) == 1) {
         return 1;
       }
     }
