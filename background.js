@@ -9,7 +9,7 @@
 
 (function() {
 
-  const DEBUG = true;
+  const DEBUG = false;
   var log = console.log;
   var logDebug;
   if (DEBUG) {
@@ -130,7 +130,6 @@
       return 1;
     }
 
-
     for (let i = 0; i < olds.length; i++) {
       // per account
       if (foldersDiffer(olds[i].folders, news[i].folders) == 1) {
@@ -167,7 +166,7 @@
     logDebug("updating settings");
     return new Promise((resolve) => {
       var updated = oldSet;
-      
+
       if (oldSet.length != newSet.length) {
         logDebug("updating accounts");
         updated = updateAccounts(oldSet, newSet, updated);
@@ -259,7 +258,7 @@
         }
       }
     } else {
-      logDebug("folder was added");
+      logDebug("subfolder was added");
     }
   }
 
