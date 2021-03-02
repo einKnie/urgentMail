@@ -22,6 +22,7 @@
 
   init()
   .then(initSettings, onError)
+  .then(storeSettings, onError)
   .then(function start() {
     log("urgentMail initialized");
     logDebug(useraccounts);
@@ -72,17 +73,20 @@
   }
 
   /*
-  * Initialize settings
-  * also update loacal storage if setting structure changed
+  * Initialize  or update settings
   */
   function initSettings() {
     return new Promise((resolve) => {
       browser.storage.local.get(["accounts"])
       .then(function(pref) {
+        logDebug("old settings:");
+        logDebug(JSON.stringify(pref.accounts));
 
         var newPrefs = {
           accounts: useraccounts
         };
+        logDebug("new accounts:");
+        logDebug(JSON.stringify(newPrefs.accounts));
 
         if (pref.accounts == undefined) {
           logDebug("no previous settings found");
@@ -93,18 +97,25 @@
         } else {
           let update = updateSettings(pref.accounts, useraccounts);
           update.then(function(newaccs) {
-            logDebug("new accounts:");
-            logDebug(newaccs);
             newPrefs.accounts = newaccs;
+            resolve(newPrefs);
           });
         }
-
-        logDebug("active settings:");
-        logDebug(newPrefs.accounts);
-        useraccounts = newPrefs.accounts;
-        browser.storage.local.set(newPrefs)
-          .then( function() { resolve("yay"); });
+        resolve(newPrefs);
       }, onError);
+    });
+  }
+
+  /*
+   * Store new settings
+   */
+  function storeSettings(prefs) {
+    return new Promise((resolve) => {
+      logDebug("active settings:");
+      logDebug(prefs.accounts);
+      useraccounts = prefs.accounts;
+      browser.storage.local.set(prefs)
+        .then( function() { resolve("yay"); });
     });
   }
 
@@ -156,14 +167,22 @@
     logDebug("updating settings");
     return new Promise((resolve) => {
       var updated = oldSet;
-
+      
       if (oldSet.length != newSet.length) {
+        logDebug("updating accounts");
         updated = updateAccounts(oldSet, newSet, updated);
       }
 
-      // update folders always, b/c we would need to loop though all
-      // accs anyway to check if anything changed there
-      updated = updateFolders(oldSet, newSet, updated);
+      // use account and folder structure from new settings && monitored folders from old
+      // but need to remove any monitored folders that don't exist anymore
+      for (let i = 0; i < updated.length; i++) {
+        // for each account
+        if (foldersDiffer(oldSet[i].folders, newSet[i].folders) == 1) {
+          logDebug(`folders differ in ${updated[i].id.accountId}`);
+          updateFolders(oldSet[i].folders, newSet[i].folders, updated[i]);
+          updated[i].folders = newSet[i].folders;
+        }
+      }
 
       // resolve with the updated settings
       resolve(updated);
@@ -200,52 +219,48 @@
   }
 
   /*
-   * Check if any folders are not in both sets
-   * and update 'updated' set
+   * Update folders of a single account
    */
-  function updateFolders(oldSet, newSet, updated) {
-    for (let i = 0; i < newSet.length; i++) {
-
-      if (oldSet[i].folders.length == newSet[i].folders.length) {
-        continue;
-      }
-
-      // folders differ
-      logDebug("in account " + oldSet[i].id.name);
-      if (oldSet[i].folders.length > newSet[i].folders.length) {
-        logDebug("folder was removed");
-
-        for (let j = 0; j < oldSet[i].folders.length; j++) {
-          let idx = newSet[i].folders.indexOf(oldSet[i].folders[j]);
-          if (idx == -1) {
-            // folder oldSet[i].folders[j] is not in newSet : remove
-            updated[i].folders.splice(j, 1);
-
-            idx = oldSet[i].monitored.indexOf(oldSet[i].folders[j].path);
-            if (idx != -1) {
-              // remove from monitored
-              updated[i].monitored.splice(idx, 1);
-            }
-          }
-        }
-      } else {
-        logDebug("folder was added");
-
-        for (let j = 0; j < newSet[i].folders.length; j++) {
-          let idx = oldSet[i].folders.indexOf(newSet[i].folders[j]);
-          if (idx == -1) {
-            // folder newSet[i].folders[j] is not in oldSet: add
-            updated[i].folders.push(newSet[i].folders[j]);
-
-            if (newSet[i].monitored.includes(newSet[i].folders[j].path)) {
-              // add to monitored
-              updated[i].monitored.push(newSet[i].folders[j].path);
-            }
-          }
-        }
-      }
+  function updateFolders(oldfol, newfol, acc) {
+    // todo: deal w/ toplevel folder change
+    for (let i = 0; i < oldfol.length; i++) {
+      logDebug(`updating folder ${oldfol[i].name}`);
+      updateSubfolders(oldfol[i], newfol[i], acc);
     }
-    return updated;
+  }
+
+  /*
+   * Check if any folders are not in both sets
+   * and update 'updated' set.
+   * (this is basically for cleanup: remove stale monitored folders)
+   */
+  function updateSubfolders(oldfol, newfol, acc) {
+    logDebug(`comparing ${oldfol.name} with ${newfol.name} of ${acc.id.accountId}`);
+
+    if (oldfol.subFolders.length == newfol.subFolders.length) {
+      // traverse deeper
+      logDebug("no changes");
+      for (let i = 0; i < oldfol.subFolders.length; i++) {
+        updateSubfolders(oldfol.subFolders[i], newfol.subFolders[i], acc);
+      }
+    } else if (oldfol.subFolders.length > newfol.subFolders.length) {
+      // subfolder was removed
+      logDebug("subfolder was removed");
+
+      for (let i = 0; i < oldfol.subFolders.length; i++) {
+        let idx = newfol.subFolders.indexOf(oldfol.subFolders[i]);
+        if (idx == -1) {
+          // folder is not in newSet : remove
+          idx = acc.monitored.indexOf(oldfol.subFolders[i].path);
+          if (idx != -1) {
+            // remove from monitored
+            acc.monitored.splice(idx, 1);
+          }
+        }
+      }
+    } else {
+      logDebug("folder was added");
+    }
   }
 
   /*
