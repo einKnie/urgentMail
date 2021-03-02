@@ -36,10 +36,7 @@
           logDebug(a);
           for (folder of a.folders) {
             checkChkbox(a, folder);
-
-            for (subfol of folder.subFolders) {
-              checkChkbox(a, subfol);
-            }
+            checkSubfolders(a, folder);
           }
         }
       } catch(e) {
@@ -49,6 +46,28 @@
     });
   }
 
+  /*
+  * Recursively check all folder- and subfolder checkboxes
+  * by calling checkChkbox for each
+  * note: thunderbird currently only supports two levels of subfolders,
+  * but this is futureproof
+  */
+  function checkSubfolders(a, folder) {
+    logDebug(`Checking ${folder.path}`);
+    for (subfol of folder.subFolders) {
+      checkChkbox(a, subfol);
+
+      if (subfol.subFolders.length > 0) {
+        // call self
+        checkSubfolders(a, subfol);
+      }
+    }
+  }
+
+  /*
+  * Check if the checkbox for the given folder is checked
+  * and update account a accordingly
+  */
   function checkChkbox(a, folder) {
     let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
     if (chkbox.checked) {
@@ -168,9 +187,7 @@
 
             for (fol of a.folders) {
               var chkbox = createCheckbox(a, fol);
-              for (subfol of fol.subFolders) {
-                chkbox.appendChild(createCheckbox(a, subfol, fol));
-              }
+              addSubfolders(a, fol, chkbox);
               content.appendChild(chkbox);
             }
 
@@ -186,6 +203,27 @@
 
       browser.storage.local.get(["accounts"])
       .then(setupSettingsPage, onError);
+    }
+
+    /*
+    * this function recursively updates a checkbox object with children
+    * and grandchildren etc. for all subfolders of the given folder.
+    * note: thunderbird currently only supports two levels of subfolders,
+    * but this is futureproof
+    */
+    function addSubfolders(a, folder, mainbox) {
+      logDebug(`Traversing ${folder.name} (${folder.path})`);
+      for (subfol of folder.subFolders) {
+        var chkbox = createCheckbox(a, subfol, folder);
+
+        if (subfol.subFolders.length > 0) {
+          // call self
+          addSubfolders(a, subfol, chkbox);
+        }
+        mainbox.appendChild(chkbox);
+      }
+
+      return mainbox;
     }
 
     /*
