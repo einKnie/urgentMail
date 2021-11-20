@@ -238,6 +238,7 @@
      */
     function createCheckbox(a, fol, parent = null) {
       var innerdiv = document.createElement("div");
+      innerdiv.id = "chkboxcontainer";
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
       chkbox.id = `${a.id.accountId}${fol.path}`;
