@@ -16,6 +16,7 @@ p {
   margin:     5px 10px auto 10px;
 }
 
+/* wrapper for titletext and titledesc (so we can align that on top of all the rest) */
 #title {
   display:    block;
   margin:     10px auto;
@@ -23,34 +24,60 @@ p {
 
 }
 
+/* title of options page */
 #titletext {
   font-size:  larger;
   display:    block;
   margin:     10px auto;
 }
 
-#accounts {
-  width: 400px;
+/* help text below title */
+#titledesc {
+  display:    block;
+  margin:     10px auto;
 }
 
-label {
-  margin:     5px 0px;
-}
-
-input[type="checkbox"] {
-  margin:           5px 10px;
-}
-
-.content {
-  padding: 0 18px;
-  display: none;
-  overflow: hidden;
-}
-
+/* wrapper for everything below title */
 .outer_box {
   display: flex;
 }
 
+/* wrapper for all found accounts */
+#accounts {
+  width:      400px;
+}
+
+/* account content */
+.content {
+  padding: 10px 18px;
+  margin-left: 10px;
+  display: none;
+  overflow: hidden;
+}
+
+/* wrapper for checkbox && label
+ * this allows us to indent subfolders
+ */
+ #chkboxcontainer {
+  margin-left: 5%;
+}
+
+/* button and checkbox labels */
+label {
+  margin:     5px 0px;
+}
+
+/* checkboxes */
+input[type="checkbox"] {
+  margin:     5px 10px;
+}
+
+/* not used, but would work for selected checkboxes */
+input[type="checkbox"]:checked {
+  display: inline;
+}
+
+/* wrapper for logo, apptext, and appversion */
 .logo_wrapper {
   width:  180px;
   margin: 10px 10px;

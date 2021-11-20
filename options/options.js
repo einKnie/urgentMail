@@ -174,6 +174,12 @@
             var account = document.createElement("div");
             account.id  = a.id.accountId;
 
+            var accChkbox = document.createElement("input");
+            accChkbox.type = "checkbox";
+            accChkbox.id = `${a.id.accountId}/chk`;
+            accChkbox.checked = false;
+            accChkbox.addEventListener('change', onAccountCheckboxToggle);
+
             var button = document.createElement("button");
             button.id         = `${a.id.accountId}/btn`;
             button.classname  = "collapsible";
@@ -191,6 +197,7 @@
               content.appendChild(chkbox);
             }
 
+            account.appendChild(accChkbox);
             account.appendChild(button);
             account.appendChild(content);
             accs.appendChild(account);
@@ -231,6 +238,7 @@
      */
     function createCheckbox(a, fol, parent = null) {
       var innerdiv = document.createElement("div");
+      innerdiv.id = "chkboxcontainer";
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
       chkbox.id = `${a.id.accountId}${fol.path}`;
@@ -267,6 +275,28 @@
       let account = split[0];
       let folder = split[1];
       logDebug(`checkbox was clicked! (${account} - ${folder})`);
+      saveOptions();
+    }
+
+     /*
+     * handler for toplevel checkbox changed
+     * set all child-checkboxes to the new value
+     */
+     function onAccountCheckboxToggle(e) {
+      let split = e.target.id.split(/\//);
+      let account = split[0];
+      logDebug(`account checkbox was clicked! (${account})`);
+      // now toggle all folder checkboxes of this account
+      // also: set to same state as this chkbox
+      var content = document.getElementById(`${account}/con`);
+      logDebug(content);
+      const boxes = content.querySelectorAll('input');
+      logDebug(boxes);
+      for (let box of boxes) {
+        logDebug(`Toggle box ${box.id}`);
+        box.checked = e.target.checked;
+      }
+
       saveOptions();
     }
 

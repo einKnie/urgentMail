@@ -222,7 +222,8 @@
    */
   function updateFolders(oldfol, newfol, acc) {
     // todo: deal w/ toplevel folder change
-    for (let i = 0; i < oldfol.length; i++) {
+    let max = (oldfol.length >= newfol.length) ? newfol.length : oldfol.length;
+    for (let i = 0; i < max; i++) {
       logDebug(`updating folder ${oldfol[i].name}`);
       updateSubfolders(oldfol[i], newfol[i], acc);
     }
