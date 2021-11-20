@@ -37,31 +37,14 @@ p {
   margin:     10px auto;
 }
 
+/* wrapper for everything below title */
+.outer_box {
+  display: flex;
+}
+
 /* wrapper for all found accounts */
 #accounts {
   width:      400px;
-}
-
-/* button and checkbox laels */
-label {
-  margin:     5px 0px;
-}
-
-/* checkboxes */
-input[type="checkbox"] {
-  margin:     5px 10px;
-}
-
-/* wrapper for checkbox&&label
- * this allows us to indent subfolders
- */
-#chkboxcontainer {
-  margin-left: 5%;
-}
-
-/* not used, but would work for selected chackboxes */
-input[type="checkbox"]:checked {
-  display: inline;
 }
 
 /* account content */
@@ -72,9 +55,26 @@ input[type="checkbox"]:checked {
   overflow: hidden;
 }
 
-/* wrapper for everything below title */
-.outer_box {
-  display: flex;
+/* wrapper for checkbox && label
+ * this allows us to indent subfolders
+ */
+ #chkboxcontainer {
+  margin-left: 5%;
+}
+
+/* button and checkbox labels */
+label {
+  margin:     5px 0px;
+}
+
+/* checkboxes */
+input[type="checkbox"] {
+  margin:     5px 10px;
+}
+
+/* not used, but would work for selected checkboxes */
+input[type="checkbox"]:checked {
+  display: inline;
 }
 
 /* wrapper for logo, apptext, and appversion */
