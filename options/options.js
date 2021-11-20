@@ -279,6 +279,7 @@
 
      /*
      * handler for toplevel checkbox changed
+     * set all child-checkboxes to the new value
      */
      function onAccountCheckboxToggle(e) {
       let split = e.target.id.split(/\//);
