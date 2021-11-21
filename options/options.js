@@ -34,10 +34,7 @@
         for (a of newPrefs.accounts) {
           logDebug("checking account: ");
           logDebug(a);
-          for (folder of a.folders) {
-            checkChkbox(a, folder);
-            checkSubfolders(a, folder);
-          }
+          checkAccount(a);
         }
       } catch(e) {
         reject(`error fetching settings: ${e}`);
@@ -46,21 +43,27 @@
     });
   }
 
+  function checkAccount(a) {
+    a.monitored = [];
+    for (let folder of a.folders) {
+      checkFolder(a, folder);
+    }
+  }
+
   /*
   * Recursively check all folder- and subfolder checkboxes
   * by calling checkChkbox for each
   * note: thunderbird currently only supports two levels of subfolders,
   * but this is futureproof
   */
-  function checkSubfolders(a, folder) {
-    logDebug(`Checking ${folder.path}`);
-    for (subfol of folder.subFolders) {
-      checkChkbox(a, subfol);
+  function checkFolder(a, folder) {
+    //logDebug(`Checking ${folder.path}`);
+    if (checkChkbox(a, folder)) {
+      a.monitored.push(folder.path);
+    }
 
-      if (subfol.subFolders.length > 0) {
-        // call self
-        checkSubfolders(a, subfol);
-      }
+    for(let f of folder.subFolders) {
+      checkFolder(a, f)
     }
   }
 
@@ -70,21 +73,7 @@
   */
   function checkChkbox(a, folder) {
     let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
-    if (chkbox && chkbox.checked) {
-      // check if folder in monitored and add
-      if (!a.monitored.includes(folder.path)) {
-        a.monitored.push(folder.path);
-      }
-    } else {
-      // check if folder in monitored, and remove
-      if (a.monitored.includes(folder.path)) {
-        for (let i = 0; i < a.monitored.length; i++) {
-          if (a.monitored[i] == folder.path) {
-            a.monitored.splice(i, 1);
-          }
-        }
-      }
-    }
+    return (chkbox.checked && !chkbox.undetermined);
   }
 
   /*
@@ -190,12 +179,7 @@
             content.classname = "content";
             content.id        = `${a.id.accountId}/con`;
             content.style.display = "none";
-
-            for (fol of a.folders) {
-              var chkbox = createCheckbox(a, fol);
-              addSubfolders(a, fol, chkbox);
-              content.appendChild(chkbox);
-            }
+            appendFolderCheckboxes(a, a.folders, content);
 
             account.appendChild(accChkbox);
             account.appendChild(button);
@@ -215,24 +199,15 @@
     }
 
     /*
-    * this function recursively updates a checkbox object with children
-    * and grandchildren etc. for all subfolders of the given folder.
-    * note: thunderbird currently only supports two levels of subfolders,
-    * but this is futureproof
-    */
-    function addSubfolders(a, folder, mainbox) {
-      logDebug(`Traversing ${folder.name} (${folder.path})`);
-      for (subfol of folder.subFolders) {
-        var chkbox = createCheckbox(a, subfol, folder);
-
-        if (subfol.subFolders.length > 0) {
-          // call self
-          addSubfolders(a, subfol, chkbox);
-        }
-        mainbox.appendChild(chkbox);
+     * create checkboxes for all folders and subfolders of an account
+     * and add to parent element
+     */
+    function appendFolderCheckboxes(a, folders, parent) {
+      for (let folder of folders) {
+        var chkbox = createCheckbox(a, folder);
+        appendFolderCheckboxes(a, folder.subFolders, chkbox);
+        parent.appendChild(chkbox);
       }
-
-      return mainbox;
     }
 
     /*
@@ -315,7 +290,7 @@
      * handler for checkbox changed
      */
     function onCheckboxToggle(e) {
-      let split = e.target.id.split(/\/(.+)/);
+      let split = e.target.id.split(/\//).filter(e => e);
       let account = split[0];
       let folder = split[1];
       logDebug(`checkbox was clicked! (${account} - ${folder})`);
@@ -328,15 +303,12 @@
      * set all child-checkboxes to the new value
      */
      function onAccountCheckboxToggle(e) {
-      let split = e.target.id.split(/\//);
+      let split = e.target.id.split(/\//).filter(e => e);
       let account = split[0];
       logDebug(`account checkbox was clicked! (${account})`);
       // now toggle all folder checkboxes of this account
-      // also: set to same state as this chkbox
       var content = document.getElementById(`${account}/con`);
-      logDebug(content);
       const boxes = content.querySelectorAll('input');
-      logDebug(boxes);
       for (let box of boxes) {
         logDebug(`Toggle box ${box.id}`);
         box.checked = e.target.checked;
