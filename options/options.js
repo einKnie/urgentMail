@@ -214,8 +214,10 @@
      * Create a checkbox on the settings page
      */
     function createCheckbox(a, fol, parent = null) {
-      var innerdiv = document.createElement("div");
-      innerdiv.id = "chkboxcontainer";
+
+      var container = document.createElement("div");
+      container.id = "chkboxcontainer";
+
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
       chkbox.id = `${a.id.accountId}${fol.path}`;
@@ -227,9 +229,9 @@
 
       chkbox.addEventListener('change', onCheckboxToggle);
 
-      innerdiv.appendChild(chkbox);
-      innerdiv.appendChild(label);
-      return innerdiv;
+      container.appendChild(chkbox);
+      container.appendChild(label);
+      return container;
     }
 
     /*
