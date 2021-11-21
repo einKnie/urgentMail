@@ -34,7 +34,7 @@
         for (a of newPrefs.accounts) {
           logDebug("checking account: ");
           logDebug(a);
-          checkAccount(a);
+          updateAccountMonitored(a);
         }
       } catch(e) {
         reject(`error fetching settings: ${e}`);
@@ -43,27 +43,30 @@
     });
   }
 
-  function checkAccount(a) {
-    a.monitored = [];
-    for (let folder of a.folders) {
-      checkFolder(a, folder);
+  /*
+   * Check the checkbox state of all folders of account recursively
+   * and set monitored accordingly
+   */
+  function updateAccountMonitored(account) {
+    account.monitored = [];
+    for (let folder of account.folders) {
+      updateFolderMonitored(account, folder);
     }
   }
 
   /*
-  * Recursively check all folder- and subfolder checkboxes
+  * Recursively check a folder and its subfolder checkboxes
   * by calling checkChkbox for each
   * note: thunderbird currently only supports two levels of subfolders,
   * but this is futureproof
   */
-  function checkFolder(a, folder) {
-    //logDebug(`Checking ${folder.path}`);
-    if (checkChkbox(a, folder)) {
-      a.monitored.push(folder.path);
+  function updateFolderMonitored(account, folder) {
+    if (checkChkbox(account, folder)) {
+      account.monitored.push(folder.path);
     }
 
     for(let f of folder.subFolders) {
-      checkFolder(a, f)
+      updateFolderMonitored(account, f)
     }
   }
 
