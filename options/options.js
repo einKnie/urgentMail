@@ -70,7 +70,7 @@
   */
   function checkChkbox(a, folder) {
     let chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
-    if (chkbox.checked) {
+    if (chkbox && chkbox.checked) {
       // check if folder in monitored and add
       if (!a.monitored.includes(folder.path)) {
         a.monitored.push(folder.path);
@@ -201,6 +201,8 @@
             account.appendChild(button);
             account.appendChild(content);
             accs.appendChild(account);
+
+            updateTopBox(a.id.accountId);
           }
         }
 
@@ -256,6 +258,48 @@
     }
 
     /*
+     * Update an account's topbox state depending on folder checkboxes
+     */
+    function updateTopBox(a) {
+      var topbox = document.getElementById(`${a}/chk`);
+      if (topbox == null) {
+        console.error(`failed to find toplevel checkbox for account ${a}`);
+      } else {
+        let state = queryChkboxState(a);
+        switch(state) {
+          case 0:
+            topbox.indeterminate = false;
+            topbox.checked = false;
+            break;
+          case 1:
+            topbox.indeterminate = false;
+            topbox.checked = true;
+            break;
+          case 2:
+            topbox.indeterminate = true;
+            break;
+          default: console.error(`indeterminate state of checkboxes for account ${a}`); break;
+        }
+      }
+    }
+
+    /*
+     * Fetch current state of folder checkboxes for an account
+     */
+    function queryChkboxState(a) {
+      logDebug(`checking checkbox state for account ${a}`);
+      var boxes = document.getElementById(`${a}/con`).querySelectorAll('input[type=checkbox]');
+      var checked_boxes = document.getElementById(`${a}/con`).querySelectorAll('input[type=checkbox]:checked');
+
+      logDebug(boxes);
+      logDebug(checked_boxes);
+
+      if (checked_boxes.length == 0) return 0;
+      if (checked_boxes.length == boxes.length) return 1;
+      else return 2;
+    }
+
+    /*
      * handler for expand button
      */
     function onButtonToggle(e) {
@@ -275,6 +319,7 @@
       let account = split[0];
       let folder = split[1];
       logDebug(`checkbox was clicked! (${account} - ${folder})`);
+      updateTopBox(account);      
       saveOptions();
     }
 
