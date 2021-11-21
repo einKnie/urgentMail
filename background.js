@@ -126,17 +126,17 @@
 
     var i = 0;
     var path = `/${chunks[i]}`;
-    var folds = a.folders;
+    var folders = a.folders;
     var found = false;
 
     while (!found) {
       logDebug(`testing ${path} in:`);
-      logDebug(folds);
+      logDebug(folders);
 
-      let partfol = folds.find(el => el.path == path);
-      logDebug(partfol);
+      let f = folders.find(el => el.path == path);
+      logDebug(f);
 
-      if (partfol == undefined) {
+      if (f == undefined) {
         // this chunk does not exist, no need to probe further
         logDebug("folder not found");
         break;
@@ -144,19 +144,18 @@
 
       // so far all chunks have been found
       if (chunks[++i] == null) {
-        // no more chunks; we found all
+        // no more chunks; folder found
         logDebug("no more chunks");
         found = true;
-      } else if (partfol.subFolders.length == 0) {
+      } else if (f.subFolders.length == 0) {
         // no more subfolders, but apparently more chunks
         logDebug("no more subfolders");
         break;
       } else {
         // traverse deeper
         path += `/${chunks[i]}`
-        folds = partfol.subFolders;
+        folders = f.subFolders;
       }
-
     }
     return found;
   }
@@ -172,21 +171,21 @@
     return new Promise((resolve) => {
 
       var updated = newSet;
-      for (account of updated) {
-        logDebug(`Updating account ${account.id.accountId}`);
+      for (let acc of updated) {
+        logDebug(`Updating account ${acc.id.accountId}`);
 
-        // reset defaults since we only want to apply previous settings
-        account.monitored = [];
-
-        var oldAcc = oldSet.find(el => el.id.accountId == account.id.accountId);
-        if (oldAcc == undefined) {
+        var old = oldSet.find(el => el.id.accountId == acc.id.accountId);
+        if (old == undefined) {
           // account is not in old set, no settings to transfer
         } else {
-          // we have the new account and the old account. for each monitored path in oldAcc, check if this folder exists in newAcc
-          for (folder of oldAcc.monitored) {
-            if (folderExists(account, folder)) {
+          // reset defaults since we only want to apply existing settings
+          acc.monitored = [];
+
+          // for each monitored path in old, check if this folder exists in account
+          for (let folder of old.monitored) {
+            if (folderExists(acc, folder)) {
               logDebug(`monitored folder ${folder} exists. keep monitoring`);
-                account.monitored.push(folder);
+              acc.monitored.push(folder);
             } else {
               logDebug(`monitored folder ${folder} does not exist anymore`);
             }
