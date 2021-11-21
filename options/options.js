@@ -248,7 +248,7 @@
 
       var label = document.createElement("label");
       label.htmlFor = chkbox.id;
-      label.appendChild(document.createTextNode(`Monitor ${parent? parent.name+' >' : ''} ${fol.name}`));
+      label.appendChild(document.createTextNode(`Monitor ${fol.name}`));
 
       chkbox.addEventListener('change', onCheckboxToggle);
 
