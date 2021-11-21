@@ -136,58 +136,35 @@
         for (a of result.accounts) {
           logDebug("setup account html: ");
           logDebug(a);
+          
+          // add account
+          var account = document.createElement("div");
+          account.id  = a.id.accountId;
 
-          if (document.getElementById(`${a.id.accountId}/con`) != null) {
-            // just update values in case the checkbox already exists
-            // .. does this ever actually happen?
-            logDebug("updating existing html");
+          var accChkbox = document.createElement("input");
+          accChkbox.type = "checkbox";
+          accChkbox.id = `${a.id.accountId}/chk`;
+          accChkbox.checked = false;
+          accChkbox.addEventListener('change', onAccountCheckboxToggle);
 
-            var content = document.getElementById(`${a.id.accountId}/con`);
-            logDebug(content);
+          var button = document.createElement("button");
+          button.id         = `${a.id.accountId}/btn`;
+          button.classname  = "collapsible";
+          button.innerHTML  = a.id.name;
+          button.addEventListener("click", onButtonToggle);
 
-            for (folder of a.folders) {
-              var chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
-              if (chkbox == null) {
-                content.appendChild(createCheckbox(a, folder));
-                chkbox = document.getElementById(`${a.id.accountId}${folder.path}`);
-              }
+          var content = document.createElement("div");
+          content.classname = "content";
+          content.id        = `${a.id.accountId}/con`;
+          content.style.display = "none";
+          appendFolderCheckboxes(a, a.folders, content);
 
-              if (a.monitored.includes(folder.path)) {
-                chkbox.checked = true;
-              } else {
-                chkbox.checked = false;
-              }
-            }
-          } else {
-            // add account
-            var account = document.createElement("div");
-            account.id  = a.id.accountId;
+          account.appendChild(accChkbox);
+          account.appendChild(button);
+          account.appendChild(content);
+          accs.appendChild(account);
 
-            var accChkbox = document.createElement("input");
-            accChkbox.type = "checkbox";
-            accChkbox.id = `${a.id.accountId}/chk`;
-            accChkbox.checked = false;
-            accChkbox.addEventListener('change', onAccountCheckboxToggle);
-
-            var button = document.createElement("button");
-            button.id         = `${a.id.accountId}/btn`;
-            button.classname  = "collapsible";
-            button.innerHTML  = a.id.name;
-            button.addEventListener("click", onButtonToggle);
-
-            var content = document.createElement("div");
-            content.classname = "content";
-            content.id        = `${a.id.accountId}/con`;
-            content.style.display = "none";
-            appendFolderCheckboxes(a, a.folders, content);
-
-            account.appendChild(accChkbox);
-            account.appendChild(button);
-            account.appendChild(content);
-            accs.appendChild(account);
-
-            updateTopBox(a.id.accountId);
-          }
+          updateTopBox(a.id.accountId);
         }
 
         document.getElementById("apptext").textContent    = um_description;
