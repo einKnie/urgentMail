@@ -6,6 +6,10 @@
 //  - on newmail event, window is set to draw attention
 // v1.2
 //  - settings are automatically saved as they are changed
+// v1.4
+//  - add account wide checkbox to select and deselect all folders at once
+// v1.5
+//  - major overhaul of the settings handling
 
 (function() {
 
