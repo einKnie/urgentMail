@@ -248,6 +248,39 @@
       var boxes = document.getElementById(`${a}/con`).querySelectorAll('input[type=checkbox]');
       var checked_boxes = document.getElementById(`${a}/con`).querySelectorAll('input[type=checkbox]:checked');
 
+      if (checked_boxes.length == 0) return 0;
+      if (checked_boxes.length == boxes.length) return 1;
+      else return 2;
+    }
+
+    /*
+     * Update a folder topbox state depending on subfolder checkboxes
+     */
+    function updateSubBox(box) {
+  
+      let state = querySubChkboxState(box);
+      switch(state) {
+        case 0:
+          box.indeterminate = false;
+          box.checked = false;
+          break;
+        case 1: /* intentional fallthrough for inner boxes here */
+        case 2:
+          box.indeterminate = true;
+          break;
+        default: console.error(`indeterminate state of checkboxes for folderbox ${box.id}`); break;
+      }
+    }
+
+    /*
+     * Fetch current state of subfolder checkboxes of folder
+     */
+    function querySubChkboxState(box) {
+      logDebug(`checking checkbox state for folder ${box.id}`);
+      
+      var boxes = document.getElementById(`${box.id}`).parentElement.querySelectorAll(`input[type=checkbox][id]:not([id="${box.id}"])`);
+      var checked_boxes = document.getElementById(`${box.id}`).parentElement.querySelectorAll(`input[type=checkbox][id]:not([id="${box.id}"]):checked`);
+
       logDebug(boxes);
       logDebug(checked_boxes);
 
@@ -268,6 +301,32 @@
       }
     }
 
+    function updateChildBoxes(box, checked) {
+      let children  = box.parentElement.querySelectorAll('div[id=chkboxcontainer]');
+      logDebug(children);
+      if ((children != null) && (children.length > 0)) {
+        logDebug("updating child checkboxes");
+        logDebug(box);
+        logDebug(children);
+        for (child of children) {
+          let box = child.querySelector('input[type=checkbox]');
+          box.checked = checked;
+          updateChildBoxes(box, checked);
+        }
+      }
+    }
+
+    function updateParentBoxes(box) {
+      let parent = box.parentElement.parentElement;
+      if (parent.id.includes('chkboxcontainer')) {
+        // on toplevel folders parent of parent is con
+        var parentbox = parent.querySelector('input[type=checkbox]');
+        logDebug(parentbox);
+        updateSubBox(parentbox);
+        updateParentBoxes(parentbox);
+      }
+    }
+
     /*
      * handler for checkbox changed
      */
@@ -276,6 +335,11 @@
       let account = split[0];
       let folder = split[1];
       logDebug(`checkbox was clicked! (${account} - ${folder})`);
+      logDebug(e.target);
+
+      updateChildBoxes(e.target, e.target.checked);
+      updateParentBoxes(e.target);
+
       updateTopBox(account);      
       saveOptions();
     }
