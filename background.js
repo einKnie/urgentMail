@@ -90,10 +90,6 @@
 
         if (pref.accounts == undefined) {
           logDebug("no previous settings found");
-        } else if (settingsDiffer(pref.accounts, useraccounts) == 0) {
-          logDebug("no changes detected");
-          // set accounts from storage b/c those have the monitored folders set
-          newPrefs.accounts = pref.accounts;
         } else {
           let update = updateSettings(pref.accounts, useraccounts);
           update.then(function(newaccs) {
@@ -119,148 +115,87 @@
     });
   }
 
-
   /*
-   *  Check if number of accounts or folders differs
+   * Check if a folder with given path exists in an account.
+   * this traverses the folder structure from top to bottom
+   * and stops if a folder in the hierarchy does not exist.
    */
-  function settingsDiffer(olds, news) {
-    logDebug("checking if settings differ in length");
-    if (olds.length != news.length) {
-      // number of accounts has changed
-      return 1;
-    }
+  function folderExists(a, path) {
+    var chunks = path.split(/\//).filter(e => e); /* split at '/' and remove empty chunks */
+    logDebug(`folder path split into chunks: ${chunks}`);
 
-    for (let i = 0; i < olds.length; i++) {
-      // per account
-      if (foldersDiffer(olds[i].folders, news[i].folders) == 1) {
-        return 1;
+    var i = 0;
+    var path = `/${chunks[i]}`;
+    var folders = a.folders;
+    var found = false;
+
+    while (!found) {
+      logDebug(`testing ${path} in:`);
+      logDebug(folders);
+
+      let f = folders.find(el => el.path == path);
+      logDebug(f);
+
+      if (f == undefined) {
+        // this chunk does not exist, no need to probe further
+        logDebug("folder not found");
+        break;
+      }
+
+      // so far all chunks have been found
+      if (chunks[++i] == null) {
+        // no more chunks; folder found
+        logDebug("no more chunks");
+        found = true;
+      } else if (f.subFolders.length == 0) {
+        // no more subfolders, but apparently more chunks
+        logDebug("no more subfolders");
+        break;
+      } else {
+        // traverse deeper
+        path += `/${chunks[i]}`
+        folders = f.subFolders;
       }
     }
-
-    return 0;
+    return found;
   }
 
   /*
-   *  Recursively check if any subfolders differ between oldfol and newfol
-  */
-  function foldersDiffer(oldfol, newfol) {
-
-    if (oldfol.length != newfol.length) {
-      return 1;
-    }
-
-    for (let i = 0; i < oldfol.length; i++) {
-      if (foldersDiffer(oldfol[i].subFolders, newfol[i].subFolders) == 1) {
-        return 1;
-      }
-    }
-
-    return 0;
-  }
-
-  /*
-   * Update the stored settings with new live data
-   * i.e. if any accounts or folders were added/removed
+   * update settings:
+   * start with current account/folder structure,
+   * then check for each monitored path in the old set
+   * wether that path still exists in the new set: if yes -> add to new monitored
    */
   function updateSettings(oldSet, newSet) {
     logDebug("updating settings");
     return new Promise((resolve) => {
-      var updated = oldSet;
 
-      if (oldSet.length != newSet.length) {
-        logDebug("updating accounts");
-        updated = updateAccounts(oldSet, newSet, updated);
-      }
+      var updated = newSet;
+      for (let acc of updated) {
+        logDebug(`Updating account ${acc.id.accountId}`);
 
-      // use account and folder structure from new settings && monitored folders from old
-      // but need to remove any monitored folders that don't exist anymore
-      for (let i = 0; i < updated.length; i++) {
-        // for each account
-        if (foldersDiffer(oldSet[i].folders, newSet[i].folders) == 1) {
-          logDebug(`folders differ in ${updated[i].id.accountId}`);
-          updateFolders(oldSet[i].folders, newSet[i].folders, updated[i]);
-          updated[i].folders = newSet[i].folders;
+        var old = oldSet.find(el => el.id.accountId == acc.id.accountId);
+        if (old == undefined) {
+          // account is not in old set, no settings to transfer
+        } else {
+          // reset defaults since we only want to apply existing settings
+          acc.monitored = [];
+
+          // for each monitored path in old, check if this folder exists in account
+          for (let folder of old.monitored) {
+            if (folderExists(acc, folder)) {
+              logDebug(`monitored folder ${folder} exists. keep monitoring`);
+              acc.monitored.push(folder);
+            } else {
+              logDebug(`monitored folder ${folder} does not exist anymore`);
+            }
+          }
         }
       }
 
       // resolve with the updated settings
       resolve(updated);
     });
-  }
-
-  /*
-   * Check if any accounts are not in both sets
-   * and update 'updated' set
-   */
-  function updateAccounts(oldSet, newSet, updated) {
-    if (oldSet.length > newSet.length) {
-      // account removed: find and remove
-      logDebug("an account was removed");
-      for (let i = 0; i < oldSet.length; i++) {
-        if (newSet.find(el => el.id.accountId == oldSet[i].id.accountId) == undefined) {
-          // account oldSet[i] is not in newSet
-          logDebug("removing account " + oldSet[i].id.name);
-          updated.splice(i, 1);
-        }
-      }
-    } else if (oldSet.length < newSet.length) {
-      // account added: find and add
-      logDebug("an account was added");
-      for (let i = 0; i < newSet.length; i++) {
-        if (oldSet.find(el => el.id.accountId == newSet[i].id.accountId) == undefined) {
-          // account newSet[i] is not in oldSet
-          logDebug("adding account " + newSet[i].id.name);
-          updated.push(newSet[i]);
-        }
-      }
-    }
-    return updated;
-  }
-
-  /*
-   * Update folders of a single account
-   */
-  function updateFolders(oldfol, newfol, acc) {
-    // todo: deal w/ toplevel folder change
-    let max = (oldfol.length >= newfol.length) ? newfol.length : oldfol.length;
-    for (let i = 0; i < max; i++) {
-      logDebug(`updating folder ${oldfol[i].name}`);
-      updateSubfolders(oldfol[i], newfol[i], acc);
-    }
-  }
-
-  /*
-   * Check if any folders are not in both sets
-   * and update 'updated' set.
-   * (this is basically for cleanup: remove stale monitored folders)
-   */
-  function updateSubfolders(oldfol, newfol, acc) {
-    logDebug(`comparing ${oldfol.name} with ${newfol.name} of ${acc.id.accountId}`);
-
-    if (oldfol.subFolders.length == newfol.subFolders.length) {
-      // traverse deeper
-      logDebug("no changes");
-      for (let i = 0; i < oldfol.subFolders.length; i++) {
-        updateSubfolders(oldfol.subFolders[i], newfol.subFolders[i], acc);
-      }
-    } else if (oldfol.subFolders.length > newfol.subFolders.length) {
-      // subfolder was removed
-      logDebug("subfolder was removed");
-
-      for (let i = 0; i < oldfol.subFolders.length; i++) {
-        let idx = newfol.subFolders.indexOf(oldfol.subFolders[i]);
-        if (idx == -1) {
-          // folder is not in newSet : remove
-          idx = acc.monitored.indexOf(oldfol.subFolders[i].path);
-          if (idx != -1) {
-            // remove from monitored
-            acc.monitored.splice(idx, 1);
-          }
-        }
-      }
-    } else {
-      logDebug("subfolder was added");
-    }
   }
 
   /*
