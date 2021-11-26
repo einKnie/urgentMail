@@ -6,11 +6,7 @@
 
   const DEBUG = false;
   var logDebug;
-  if (DEBUG) {
-    logDebug = console.log;
-  } else {
-    logDebug = function () { };
-  }
+  setDebug(DEBUG);
 
   // add listeners.
   // need to manually 'disable' the default action of form-submit -> reloads page, which is unnecessary.
@@ -172,10 +168,35 @@
 
         document.getElementById("apptext").textContent    = um_description;
         document.getElementById("appversion").textContent = um_version;
+
+        // add debug button
+        var logowrapper = document.getElementsByClassName('logo_wrapper')[0];
+        createDbgCheckbox(logowrapper);
       }
 
       browser.storage.local.get(["accounts"])
       .then(setupSettingsPage, onError);
+    }
+
+    function createDbgCheckbox(parent) {
+
+      var container = document.createElement("div");
+      container.id = "dbgcontainer";
+
+      var chkbox = document.createElement("input");
+      chkbox.type = "checkbox";
+      chkbox.id = "chkbox/dbg";
+      chkbox.checked = DEBUG;
+
+      var label = document.createElement("label");
+      label.htmlFor = chkbox.id;
+      label.appendChild(document.createTextNode("show debug logs"));
+
+      chkbox.addEventListener('change', onDebugCheckboxToggle);
+
+      container.appendChild(chkbox);
+      container.appendChild(label);
+      parent.appendChild(container);
     }
 
     /*
@@ -297,6 +318,20 @@
       }
 
       saveOptions();
+    }
+
+    function onDebugCheckboxToggle(e) {
+      logDebug("Debug checkbox was clicked!");
+      var debug = e.target.checked;
+      setDebug(debug);
+    }
+
+    function setDebug(debug) {
+      if (debug == true) {
+        logDebug = console.log;
+      } else {
+        logDebug = function () { };
+      }
     }
 
     function onError(error) {

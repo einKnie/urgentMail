@@ -13,16 +13,12 @@
 
 (function() {
 
-  const DEBUG = false;
+  const DEBUG = true;
   var log = console.log;
   var logDebug;
-  if (DEBUG) {
-    logDebug = console.log;
-  } else {
-    logDebug = function () { };
-  }
 
   var useraccounts = [];
+  setDebug(DEBUG);
 
   init()
   .then(initSettings, onError)
@@ -241,6 +237,14 @@
 
   function onError(e) {
     log('error: ' + e);
+  }
+
+  function setDebug(debug) {
+    if (debug == true) {
+      logDebug = console.log;
+    } else {
+      logDebug = function () { };
+    }
   }
 
 })();
