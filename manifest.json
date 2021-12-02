@@ -15,7 +15,8 @@
   "permissions": [
     "messagesRead",
     "accountsRead",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
 
   "background": {
