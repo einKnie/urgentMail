@@ -13,12 +13,12 @@
 
 (function() {
 
-  const DEBUG = false;
+  var um_debug = false;
   var log = console.log;
   var logDebug;
 
   var useraccounts = [];
-  setDebug(DEBUG);
+  setDebug(um_debug);
 
   init()
   .then(initSettings, onError)
@@ -77,14 +77,20 @@
   */
   function initSettings() {
     return new Promise((resolve) => {
-      browser.storage.local.get(["accounts"])
+      browser.storage.local.get(["accounts","debug"])
       .then(function(pref) {
+        if (pref.debug != undefined) {
+          setDebug(pref.debug);
+        }
+
         logDebug("old settings:");
         logDebug(JSON.stringify(pref.accounts));
 
         var newPrefs = {
-          accounts: useraccounts
+          accounts: useraccounts,
+          debug:    um_debug
         };
+
         logDebug("new accounts:");
         logDebug(JSON.stringify(newPrefs.accounts));
 
@@ -236,12 +242,13 @@
   }
 
   function onError(e) {
-    log('error: ' + e);
+    console.error(e);
   }
 
   function setDebug(debug) {
-    if (debug == true) {
-      logDebug = console.log;
+    um_debug = debug;
+    if (um_debug == true) {
+      logDebug = console.debug;
     } else {
       logDebug = function () { };
     }
