@@ -86,6 +86,18 @@
   }
 
   /*
+   * Get author from manifest
+   */
+  function getAuthor() {
+    var man = browser.runtime.getManifest();
+    var author = "";
+    if (man.hasOwnProperty("author")) {
+      author = `${man.author}`;
+    }
+    return author;
+  }
+
+  /*
   * Store options from settings page
   */
   function saveOptions() {
@@ -169,19 +181,25 @@
         document.getElementById("apptext").textContent    = um_description;
         document.getElementById("appversion").textContent = um_version;
 
-        // add debug button
-        var logowrapper = document.getElementsByClassName('logo_wrapper')[0];
-        createDbgCheckbox(logowrapper);
+        if (result.accounts.find(el => el.id.name == getAuthor()) != undefined) {
+          // add debug button
+          var logowrapper = document.getElementsByClassName('logo_wrapper')[0];
+          createDbgCheckbox(logowrapper);
+        }
       }
 
       browser.storage.local.get(["accounts"])
       .then(setupSettingsPage, onError);
     }
 
+    /*
+     * Create a checkbox for debug logs on the settings page
+     */
     function createDbgCheckbox(parent) {
 
       var container = document.createElement("div");
       container.id = "dbgcontainer";
+      //container.style.display = "block";
 
       var chkbox = document.createElement("input");
       chkbox.type = "checkbox";
