@@ -4,13 +4,10 @@
   var um_description = "Select folders to monitor for new mail";
   var um_version = "v0.0";
 
-  const DEBUG = false;
+  var um_debug = false;
+  log = console.log;
   var logDebug;
-  if (DEBUG) {
-    logDebug = console.log;
-  } else {
-    logDebug = function () { };
-  }
+  setDebug(um_debug);
 
   // add listeners.
   // need to manually 'disable' the default action of form-submit -> reloads page, which is unnecessary.
@@ -36,6 +33,7 @@
           logDebug(a);
           updateAccountMonitored(a);
         }
+        newPrefs.debug = um_debug;
       } catch(e) {
         reject(`error fetching settings: ${e}`);
       }
@@ -90,16 +88,29 @@
   }
 
   /*
+   * Get author from manifest
+   */
+  function getAuthor() {
+    var man = browser.runtime.getManifest();
+    var author = "";
+    if (man.hasOwnProperty("author")) {
+      author = `${man.author}`;
+    }
+    return author;
+  }
+
+  /*
   * Store options from settings page
   */
   function saveOptions() {
-    var oldPrefs = browser.storage.local.get(["accounts"]);
+    var oldPrefs = browser.storage.local.get(["accounts", "debug"]);
     oldPrefs.then(fetchSettings, onError).then(function(result) {
       logDebug("storing new data");
       return new Promise((resolve, reject) => {
         logDebug(result);
         var newPrefs = {
-          accounts: result.accounts
+          accounts: result.accounts,
+          debug:    result.debug
         };
         logDebug(newPrefs);
         browser.storage.local.set(newPrefs)
@@ -130,9 +141,13 @@
     */
     function restoreOptions() {
       function setupSettingsPage(result) {
+        if (result.debug != undefined) {
+          setDebug(result.debug);
+        }
+
         var accs = document.getElementById("accounts");
         if (accs == null) {
-          onError("failed to get accout container from html");
+          onError("failed to get account container from html");
           return;
         }
 
@@ -172,10 +187,41 @@
 
         document.getElementById("apptext").textContent    = um_description;
         document.getElementById("appversion").textContent = um_version;
+
+        if (result.accounts.find(el => el.id.name == getAuthor()) != undefined) {
+          // add debug button
+          var logowrapper = document.getElementsByClassName('logo_wrapper')[0];
+          createDbgCheckbox(logowrapper);
+        }
       }
 
-      browser.storage.local.get(["accounts"])
+      browser.storage.local.get(["accounts","debug"])
       .then(setupSettingsPage, onError);
+    }
+
+    /*
+     * Create a checkbox for debug logs on the settings page
+     */
+    function createDbgCheckbox(parent) {
+
+      var container = document.createElement("div");
+      container.id = "dbgcontainer";
+      //container.style.display = "block";
+
+      var chkbox = document.createElement("input");
+      chkbox.type = "checkbox";
+      chkbox.id = "chkbox/dbg";
+      chkbox.checked = um_debug;
+
+      var label = document.createElement("label");
+      label.htmlFor = chkbox.id;
+      label.appendChild(document.createTextNode("show debug logs"));
+
+      chkbox.addEventListener('change', onDebugCheckboxToggle);
+
+      container.appendChild(chkbox);
+      container.appendChild(label);
+      parent.appendChild(container);
     }
 
     /*
@@ -299,8 +345,24 @@
       saveOptions();
     }
 
+    function onDebugCheckboxToggle(e) {
+      logDebug("Debug checkbox was clicked!");
+      var debug = e.target.checked;
+      setDebug(debug);
+      saveOptions();
+    }
+
+    function setDebug(debug) {
+      um_debug = debug;
+      if (um_debug == true) {
+        logDebug = console.debug;
+      } else {
+        logDebug = function () { };
+      }
+    }
+
     function onError(error) {
-      console.log(`Error: ${error}`);
+      console.error(error);
     }
 
   })();
