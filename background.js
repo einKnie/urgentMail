@@ -10,6 +10,8 @@
 //  - add account wide checkbox to select and deselect all folders at once
 // v1.5
 //  - major overhaul of the settings handling
+// v1.6
+//  - unlimitedStorage permission and hidden debug
 
 (function() {
 
