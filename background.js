@@ -13,7 +13,7 @@
 
 (function() {
 
-  const DEBUG = true;
+  const DEBUG = false;
   var log = console.log;
   var logDebug;
 
